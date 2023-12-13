@@ -18,16 +18,39 @@
  * @param {JSON} scannedTextObj - A JSON object representing the scanned text.
  * @returns {JSON} - Search results.
  * */ 
- function findSearchTermInBooks(searchTerm, scannedTextObj) {
+function findSearchTermInBooks(searchTerm, scannedTextObj) {
     /** You will need to implement your search and 
      * return the appropriate object here. */
 
-    var result = {
-        "SearchTerm": "",
+    var final_result = {
+        "SearchTerm": searchTerm,
         "Results": []
     };
     
-    return result; 
+    // Loop through every scanned text object.
+    for (let i = 0; i < scannedTextObj.length; i++) {
+        // Loop through every content element in each scanned text object.
+        // for (let text_element in (scannedTextObj[i].Content)) {
+
+        for (let content_i = 0; content_i < scannedTextObj[i].Content.length; content_i++) {
+            let text_element = scannedTextObj[i].Content[content_i];
+            let split_text_element = text_element.Text.split(' ');
+            for (let text_element_i = 0; text_element_i < split_text_element.length; text_element_i++) {
+                let stripped_word = split_text_element[text_element_i].replace(/[^a-zA-Z0-9]/g, '');
+                if (stripped_word === searchTerm) {
+                    const result = {
+                        "ISBN": scannedTextObj[i].ISBN,
+                        "Page": text_element.Page,
+                        "Line": text_element.Line
+                    };
+                    final_result.Results.push(result);
+                    break;
+                }
+            }
+        }
+    }
+    
+    return final_result; 
 }
 
 /** Example input object. */
@@ -54,6 +77,51 @@ const twentyLeaguesIn = [
         ] 
     }
 ]
+
+const twentyLeaguesInTwoObjects = [
+    {
+        "Title": "Twenty Thousand Leagues Under the Sea",
+        "ISBN": "9780000528531",
+        "Content": [
+            {
+                "Page": 31,
+                "Line": 8,
+                "Text": "now simply went on by her own momentum.  The dark-"
+            },
+            {
+                "Page": 31,
+                "Line": 9,
+                "Text": "ness was then profound; and however good the Canadian\'s"
+            },
+            {
+                "Page": 31,
+                "Line": 10,
+                "Text": "eyes were, I asked myself how he had managed to see, and"
+            } 
+        ]
+    },
+    {
+        "Title": "Forty Thousand Leagues Under the Sea",
+        "ISBN": "9780000528538",
+        "Content": [
+            {
+                "Page": 441,
+                "Line": 8,
+                "Text": "now simply went on by her own momentum.  The dark- world"
+            },
+            {
+                "Page": 31,
+                "Line": 9,
+                "Text": "ness was then profound;\'s"
+            },
+            {
+                "Page": 11,
+                "Line": 10,
+                "Text": "eyes were, the where is it all?"
+            } 
+        ]
+    }
+]
     
 /** Example output object */
 const twentyLeaguesOut = {
@@ -63,6 +131,28 @@ const twentyLeaguesOut = {
             "ISBN": "9780000528531",
             "Page": 31,
             "Line": 9
+        }
+    ]
+}
+
+const twentyLeaguesOut0CaseSensitive = {
+    "SearchTerm": "Then",
+    "Results": [
+    ]
+}
+
+const twentyLeaguesOutTwoObjects = {
+    "SearchTerm": "the",
+    "Results": [
+        {
+            "ISBN": "9780000528531",
+            "Page": 31,
+            "Line": 9
+        },
+        {
+            "ISBN": "9780000528538",
+            "Page": 11,
+            "Line": 10
         }
     ]
 }
@@ -101,4 +191,40 @@ if (test2result.Results.length == 1) {
     console.log("FAIL: Test 2");
     console.log("Expected:", twentyLeaguesOut.Results.length);
     console.log("Received:", test2result.Results.length);
+}
+
+// Negative test example and case sensitive test
+const test3result = findSearchTermInBooks("Then", twentyLeaguesIn);
+if (JSON.stringify(twentyLeaguesOut0CaseSensitive) === JSON.stringify(test3result)) {
+    console.log("PASS: Test 3");
+} else {
+    console.log("FAIL: Test 3");
+    console.log("Expected:", twentyLeaguesOut0CaseSensitive);
+    console.log("Received:", test3result);
+}
+const test4result = findSearchTermInBooks("Then", twentyLeaguesIn);
+if (test4result.Results.length === 0) {
+    console.log("PASS: Test 4");
+} else {
+    console.log("FAIL: Test 4");
+    console.log("Expected:", 0);
+    console.log("Received:", test4result.Results.length);
+}
+
+// Positive test
+const test5result = findSearchTermInBooks("the", twentyLeaguesInTwoObjects);
+if (JSON.stringify(twentyLeaguesOutTwoObjects) === JSON.stringify(test5result)) {
+    console.log("PASS: Test 5");
+} else {
+    console.log("FAIL: Test 5");
+    console.log("Expected:", twentyLeaguesOutTwoObjects);
+    console.log("Received:", test5result);
+}
+const test6result = findSearchTermInBooks("the", twentyLeaguesInTwoObjects);
+if (test6result.Results.length === 2) {
+    console.log("PASS: Test 6");
+} else {
+    console.log("FAIL: Test 6");
+    console.log("Expected:", 2);
+    console.log("Received:", test6result.Results.length);
 }
